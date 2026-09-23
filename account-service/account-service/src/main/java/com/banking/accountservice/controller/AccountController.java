@@ -62,7 +62,7 @@ public class AccountController {
             @PathVariable String accountNumber
     ){
         accountService.blockAccount(accountNumber);
-        return ResponseEntity.ok("Account Blocked Successfully")
+        return ResponseEntity.ok("Account Blocked Successfully");
     }
 
     //saga step no 1 - deduct balance also called by transaction service when transfer is initiated.
