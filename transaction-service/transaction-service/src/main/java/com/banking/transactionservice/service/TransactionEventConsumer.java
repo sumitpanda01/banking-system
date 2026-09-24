@@ -24,7 +24,7 @@ public class TransactionEventConsumer {
 
     private final TransactionRepository transactionRepository;
     private final RedisTemplate<String, String> redisTemplate;
-
+    private final TransactionService transactionService;
     private static final long OTP_EXPIRY_MINUTES =5;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -90,6 +90,19 @@ public class TransactionEventConsumer {
 
         } catch (Exception e) {
             log.error("Error handling verification required : {}", e.getMessage());
+        }
+    }
+
+
+    @KafkaListener(topics = "fraud.check.clean")
+    public void consumeFraudCheckCleanResult(
+            @Payload Map<String, Object> payload
+    ){
+        try{
+            String transactionId = (String) payload.get("transactionId");
+            transactionService.processCleanResult(transactionId);
+        } catch (Exception e) {
+            log.error("Error processing fraud check result: {}", e.getMessage());
         }
     }
 }

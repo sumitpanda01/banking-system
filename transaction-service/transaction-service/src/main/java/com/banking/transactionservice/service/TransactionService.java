@@ -128,6 +128,7 @@ public class TransactionService {
         log.info("OTP verified- completing transaction: {}", transactionId);
         redisTemplate.delete(otpKey);
         completeTransaction(transaction);
+        return mapToResponse(transaction);
     }
 
     private void compensateTransaction(Transaction transaction,String reason){
@@ -195,6 +196,20 @@ public class TransactionService {
                 transaction.getId());
     }
 
+    public void processCleanResult(String transactionId){
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(()-> new RuntimeException(
+                        "Transaction not found "+ transactionId
+                ));
+
+        //to avoid idempotency
+        if(transaction.getStatus() != TransactionStatus.PROCESSING){
+            log.warn("Transaction {} not PROCESSING - skippink", transactionId);
+            return;
+        }
+
+        completeTransaction(transaction);
+    }
 
     private TransactionResponse mapToResponse(Transaction transaction){
         TransactionResponse response = new TransactionResponse();
